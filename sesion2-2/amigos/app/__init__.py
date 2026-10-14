@@ -1,3 +1,4 @@
+from flask import Flask, render_template
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -33,8 +34,10 @@ def create_app(config_name):
     from app import models
 
     # Configuremos una ruta de prueba para la app
-    @app.route("/")
+    @app.route('/amigos')
     def prueba():
-        return "¡Hola Flask con MariaDB!"
+        from app.models import Amigo
+        amigos = Amigo.query.all()
+        return render_template('tabla_amigos.html', amigos=amigos)
 
     return app
