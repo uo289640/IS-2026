@@ -1,43 +1,65 @@
-from flask import Flask, render_template
-from flask import Flask
+from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
-# Importamos el diccionario de configuraciones (production, development)
 from config import app_config
 
-# Crear el objeto db que servirá para conectar con la base de datos
 db = SQLAlchemy()
 
-# La factoría recibe como parámetro que configuración queremos usar
 def create_app(config_name):
-    # La app simplemente es una instancia de la clase Flask
-    # La "receta" obliga a pasarle el nombre del módulo en que fue creada
-    # que python guarda en la variable __name__. El parámetro
-    # instance_relative_config es para decirle que cuando leamos
-    # ficheros de configuración, lo haga de la carpeta ./instance
     app = Flask(__name__, instance_relative_config=True)
-
-    # Una vez creada, la app debe almacenar una configuración
-    # La sacamos del diccionario de configuraciones
     app.config.from_object(app_config[config_name])
-
-    # Extendemos esa configuración con la URL de la base de datos
-    # que leemos de otro fichero de configuración en ./instance
     app.config.from_pyfile('config.py')
-
-    # Pasamos la aplicación ya configurada a db.init(), quien usará
-    # la URL para conectar con la base de datos sql
     db.init_app(app)
-
+    
     migrate = Migrate(app, db)
+    
     from app import models
+    from app.models import Amigo  # Lo importamos aquí para usarlo en todas las rutas
 
-    # Configuremos una ruta de prueba para la app
+    # Mostrar la tabla de amigos
     @app.route('/amigos')
-    def prueba():
-        from app.models import Amigo
+    def tabla_amigos():
         amigos = Amigo.query.all()
         return render_template('tabla_amigos.html', amigos=amigos)
+
+    # Mostrar el formulario vacío para crear un amigo
+    @app.route('/new_amigo')
+    def new_amigo():
+        return render_template('formulario.html', amigo=None)
+
+    # Mostrar el formulario relleno para editar un amigo existente
+    @app.route('/edit_amigo/<int:id>')
+    def edit_amigo(id):
+        amigo = Amigo.query.get(id)
+        return render_template('formulario.html', amigo=amigo)
+
+    # Borrar un amigo y volver a la tabla
+    @app.route('/delete_amigo/<int:id>')
+    def delete_amigo(id):
+        amigo = Amigo.query.get(id)
+        if amigo:
+            db.session.delete(amigo)
+            db.session.commit()
+        return redirect('/amigos')
+
+    # Recibir los datos del formulario 
+    @app.route('/save_amigo', methods=['POST'])
+    def save_amigo():
+        id_amigo = request.form.get('id')
+        name = request.form.get('name')
+        lati = request.form.get('lati')
+        longi = request.form.get('longi')
+
+        if id_amigo:  # Si hay ID, actualizamos el amigo existente
+            amigo = Amigo.query.get(id_amigo)
+            amigo.name = name
+            amigo.lati = lati
+            amigo.longi = longi
+        else:  # Si no hay ID, creamos uno nuevo
+            amigo = Amigo(name=name, lati=lati, longi=longi)
+            db.session.add(amigo)
+        
+        db.session.commit()
+        return redirect('/amigos')
 
     return app

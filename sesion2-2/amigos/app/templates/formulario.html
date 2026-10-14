@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Formulario Amigo</title>
+  </head>
+  <body>
+    <h1>Datos del Amigo</h1>
+    
+    <!-- El formulario envía los datos por POST a la ruta /save_amigo -->
+    <form action="/save_amigo" method="POST">
+      
+      <!-- Campo oculto para el ID (el usuario no lo ve) -->
+      <input type="hidden" name="id" value="{{ amigo.id if amigo else '' }}">
+      
+      <p>
+        <label>Nombre:</label><br>
+        <input type="text" name="name" value="{{ amigo.name if amigo else '' }}" required>
+      </p>
+      <p>
+        <label>Latitud:</label><br>
+        <input type="text" name="lati" value="{{ amigo.lati if amigo else '' }}" required>
+      </p>
+      <p>
+        <label>Longitud:</label><br>
+        <input type="text" name="longi" value="{{ amigo.longi if amigo else '' }}" required>
+      </p>
+      
+      <input type="submit" value="Enviar">
+    </form>
+
+    <br>
+    <a href="/amigos">Volver a la lista</a>
+  </body>
+</html>
