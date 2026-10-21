@@ -14,21 +14,20 @@
         <th>Nombre</th>
         <th>Latitud</th>
         <th>Longitud</th>
-        <th>Acciones</th>
+        <th>Modificar</th>
+        <th>Borrar</th>
       </tr>
       {% for amigo in amigos %}
       <tr>
         <td>{{amigo.name}}</td>
         <td>{{amigo.lati}}</td>
         <td>{{amigo.longi}}</td>
-        <td>
-          <a href="/edit_amigo/{{amigo.id}}">Modificar</a> | 
-          <a href="/delete_amigo/{{amigo.id}}">Borrar</a>
-        </td>
+        <td><a href="/html/edit_amigo/{{amigo.id}}">Modificar</a></td>
+        <td><a href="/html/delete_amigo/{{amigo.id}}">Borrar</a></td>
       </tr>
       {% endfor %}
     </table>
     <br>
-    <a href="/new_amigo"><button>Añadir amigo</button></a>
+    <a href="/html/new_amigo">Añadir amigo</a>
   </body>
 </html>
