@@ -8,7 +8,7 @@ from ..models import Amigo
 def get_amigo(id):
     amigo = Amigo.query.get_or_404(id)
     amigodict = {'id': amigo.id, 'name': amigo.name,
-                 'lati': amigo.lati, 'longi': amigo.longi}
+                 'lati': amigo.lati, 'longi': amigo.longi, 'device': amigo.device}
     return jsonify(amigodict)
 
 # 2. GET /amigo/byName/<name>
@@ -18,7 +18,7 @@ def get_amigo_by_name(name):
     if not amigo:
         abort(404, "No se encuentra ningún amigo con ese nombre")
     amigodict = {'id': amigo.id, 'name': amigo.name,
-                 'lati': amigo.lati, 'longi': amigo.longi}
+                 'lati': amigo.lati, 'longi': amigo.longi, 'device': amigo.device}
     return jsonify(amigodict)
 
 # 3. EJERCICIO RESUELTO: GET /amigos
@@ -27,7 +27,7 @@ def list_amigos():
     amigos = Amigo.query.all()
     lista_amigos = []
     for amigo in amigos:
-        lista_amigos.append({'id': amigo.id, 'name': amigo.name, 'lati': amigo.lati, 'longi': amigo.longi})
+        lista_amigos.append({'id': amigo.id, 'name': amigo.name, 'lati': amigo.lati, 'longi': amigo.longi, 'device': amigo.device})
     return jsonify(lista_amigos)
 
 # 4. PUT /amigo/<id>
@@ -40,6 +40,7 @@ def edit_amigo(id):
     name = request.json.get("name")
     lati = request.json.get("lati")
     longi = request.json.get("longi")
+    device = request.json.get("device") 
     
     if name:
         amigo.name = name
@@ -47,12 +48,14 @@ def edit_amigo(id):
         amigo.lati = lati
     if longi:
         amigo.longi = longi
+    if device is not None:             
+        amigo.device = device
         
-    if name or lati or longi:
+    if name or lati or longi or (device is not None): 
         db.session.commit()
         
     amigodict = {"id": amigo.id, "name": amigo.name,
-                 "longi": amigo.longi, "lati": amigo.lati }
+                 "longi": amigo.longi, "lati": amigo.lati, "device": amigo.device}
     return jsonify(amigodict)
 
 # 5. EJERCICIO RESUELTO: DELETE /amigo/<id>
@@ -79,11 +82,20 @@ def new_amigo():
         
     lati = request.json.get("lati", "0")
     longi = request.json.get("longi", "0")
+    device = request.json.get("device", "")
     
-    amigo = Amigo(name=name, lati=lati, longi=longi)
+    amigo = Amigo(name=name, lati=lati, longi=longi, device=device)
     db.session.add(amigo)
     db.session.commit()
     
     amigodict = {"id": amigo.id, "name": amigo.name,
-                 "longi": amigo.longi, "lati": amigo.lati }
+                 "longi": amigo.longi, "lati": amigo.lati, "device": amigo.device}
     return jsonify(amigodict)
+
+# 7. NUEVO EJERCICIO: GET /devices
+@api.route("/devices")
+def list_devices():
+    amigos = Amigo.query.all()
+    # Filtramos para devolver solo los devices que no sean vacíos ni nulos
+    lista_devices = [amigo.device for amigo in amigos if amigo.device]
+    return jsonify(lista_devices)
